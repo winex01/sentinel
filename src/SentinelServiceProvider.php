@@ -3,17 +3,19 @@
 namespace Winex\Sentinel;
 
 use Illuminate\Support\ServiceProvider;
+use Winex\Sentinel\Commands\SentinelInstallCommand;
 
 class SentinelServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'sentinel');
         
-        $this->publishes([
-            __DIR__.'/../config/sentinel.php' => config_path('sentinel.php'),
-        ], 'sentinel-config');
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                SentinelInstallCommand::class,
+            ]);
+        }
     }
 
     public function register()
