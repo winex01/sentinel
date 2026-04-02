@@ -51,3 +51,24 @@ CONTACT_US=https://example.com/contact
 | Command | Description |
 |---|---|
 | `php artisan sentinel:install` | Publish migration with current timestamp |
+
+
+## Local Development
+
+Add to your app's `composer.json`:
+```json
+"repositories": [
+    {
+        "type": "path",
+        "url": "../sentinel",
+        "options": {
+            "symlink": true
+        }
+    }
+],
+```
+
+Then run:
+```bash
+composer require winex/sentinel:@dev
+```
