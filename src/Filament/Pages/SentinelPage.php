@@ -23,6 +23,8 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Winex\Sentinel\Filament\Actions\CopyableAction;
 
+use function Livewire\str;
+
 class SentinelPage extends Page implements HasForms, HasActions, HasTable
 {
     use InteractsWithForms;
@@ -46,11 +48,12 @@ class SentinelPage extends Page implements HasForms, HasActions, HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(Sentinel::query())
+            ->query(Sentinel::query()->where('file_path', 'LIKE', '%.lic'))
             ->columns([
                 TextColumn::make('app_id')
                     ->label('App ID')
-                    ->copyable(),
+                    ->copyable()
+                    ->tooltip(fn ($record) => str_replace('licenses/', '', $record->file_path)),
 
                 DateColumn::make('expires_at')
                     ->label('Expiration Date')

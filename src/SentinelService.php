@@ -100,6 +100,7 @@ class SentinelService
     public static function isSubscribed(Authenticatable $user): bool
     {
         $license = Sentinel::where('user_id', $user->id)
+            ->where('file_path', 'LIKE', '%.lic')
             ->orderBy('expires_at', 'desc')
             ->first();
 
@@ -108,7 +109,6 @@ class SentinelService
         }
 
         $result = static::verifyLicenseFile($license->file_path, $user);
-
         return $result['valid'];
     }
 
