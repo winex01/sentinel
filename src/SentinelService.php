@@ -6,16 +6,18 @@ use Winex\Sentinel\Models\Sentinel;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 class SentinelService
-{
-    public static function getPublicKey(): string
+{   
+    public static function getPublicKey()
     {
-        $keyPath = config('sentinel.public_key_path');
-        
-        if (file_exists($keyPath)) {
+        return cache()->rememberForever('sentinel_public_key', function () {
+            $keyPath = config('sentinel.public_key_path', base_path('public.pem'));
             return file_get_contents($keyPath);
-        }
-        
-        return config('sentinel.default_public_key');
+        });
+    }
+
+    public static function clearPublicKeyCache()
+    {
+        return cache()->forget('sentinel_public_key');
     }
 
     public static function getTrialDays(): int
@@ -62,7 +64,17 @@ class SentinelService
             'expires_at' => $license['expires_at'],
         ]);
 
-        $verified = openssl_verify($data, base64_decode($license['signature']), static::getPublicKey(), OPENSSL_ALGO_SHA256);
+        try {
+            $verified = openssl_verify($data, base64_decode($license['signature']), static::getPublicKey(), OPENSSL_ALGO_SHA256);
+        } catch (\Throwable $th) {
+            // $encoded = "DQogICAg4pWU4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWXDQogICAg4pWRICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQ0KICAgIOKVkSAgICAg8J+WlSAgWU9VIFJFQUxMWSBUSE9VR0hUIFlPVSBDT1VMRCBDUkFDSyBJVD8gIPCflpUgICAgICDilZENCiAgICDilZEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRDQogICAg4pWRICAgICBOaWNlIHRyeSwgYnV0IHRoZSBsaWNlbnNlIHN5c3RlbSBzYXlzOiAgICAgICAgICAgICAgIOKVkQ0KICAgIOKVkSAgICAgJ0dPT0QgTFVDSyBXSVRIIFlPVVIgQ1JBQ0tFRCBWRVJTSU9OLCBDSEFNUCEnICAgICAgICDilZENCiAgICDilZEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRDQogICAg4pWRICAgICBIb3BlIHlvdSBlbmpveSB0aGUgYnVncyEg8J+koSDwn6ShICAgICAgICAgICAgICAgICAgICAgIOKVkQ0KICAgIOKVkSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZENCiAgICDilZrilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZ0NCiAgICA=";
+            // $msg = base64_decode($encoded);
+            // echo "<pre>";
+            // echo $msg;
+            // echo "</pre>";
+            // exit;
+            $verified = null;
+        }
 
         if ($verified !== 1) {
             return ['valid' => false, 'message' => 'License signature is invalid.'];

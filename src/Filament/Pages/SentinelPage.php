@@ -108,6 +108,8 @@ class SentinelPage extends Page implements HasForms, HasActions, HasTable
             ])
             ->modalSubmitActionLabel('Activate')
             ->action(function (array $data) {
+                SentinelService::clearPublicKeyCache();
+
                 $user = auth()->user();
                 $key = 'activate-license:' . $user->id;
 
