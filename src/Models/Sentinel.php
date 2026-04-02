@@ -4,7 +4,6 @@ namespace Winex\Sentinel\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Contracts\Auth\Authenticatable;
 
 class Sentinel extends Model
 {
